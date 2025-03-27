@@ -1,29 +1,37 @@
 name: CI with Docker Compose
 
 on:
-push:
-   branches:
-     - main
-pull_request:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-docker-ci:
-   runs-on: ubuntu-latest
+  docker-ci:
+    runs-on: ubuntu-latest
 
-   steps:
-     - name: Checkout code
-       uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-     - name: Set up Docker Compose
-       run:
-         docker copose up -d
-         echo "⏳ Waiting for containers to initialize..."
-         sleep 20
+      - name: Set up Docker and Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker --version
+          docker-compose --version
 
-     - name: Run test inside web container
-       run: docker compose exec -it web curl http://localhost:5000/api/users
+      - name: Build and start containers
+        run: |
+          docker-compose up -d
+          echo "⏳ Waiting for containers to initialize..."
+          sleep 20
 
-     - name: Shutdown Docker Compose
-       if: always()
-       run: docker compose down
+      - name: Run test inside web container
+        run: docker-compose exec -T web curl http://localhost:5000/api/users
 
+      - name: Shutdown Docker Compose
+        if: always()
+        run: docker-compose down
