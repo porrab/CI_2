@@ -17,8 +17,11 @@ jobs:
       - name: Set up Docker Compose
         run:
            docker compose up -d;
-           echo "⏳ Waiting for containers to initialize..."
-           sleep 50
+           echo "⏳ Waiting for containers to initialize...";
+           until docker compose ps | grep -q 'web.*Up'; do
+            echo "Waiting for web container to be ready...";
+            sleep 5
+          done
 
       - name: Run test inside web container
         run: docker compose exec -T web curl http://localhost:5000/api/users
