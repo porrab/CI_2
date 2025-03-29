@@ -17,15 +17,12 @@ jobs:
       - name: Set up Docker Compose
         run:
            docker compose up -d
-      - name: Build and start containers
-        run:
-          docker-compose up -d
-          echo "⏳ Waiting for containers to initialize..."
-          sleep 20
+           echo "⏳ Waiting for containers to initialize..."
+           sleep 20
 
       - name: Run test inside web container
-        run: docker-compose exec -T web curl http://localhost:5000/api/users
+        run: docker compose exec -T web curl http://localhost:5000/api/users
 
       - name: Shutdown Docker Compose
         if: always()
-        run: docker-compose down
+        run: docker compose down
